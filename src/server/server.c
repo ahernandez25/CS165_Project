@@ -88,9 +88,9 @@ int main(int argc,  char *argv[])
 	port = p;
 
 	/* the message we send the client */
-	strlcpy(buffer,
+	/*strlcpy(buffer,
 	    "What is the air speed velocity of a coconut laden swallow?\n",
-	    sizeof(buffer));
+	    sizeof(buffer)); */
 
 	memset(&sockname, 0, sizeof(sockname));
 	sockname.sin_family = AF_INET;
@@ -149,6 +149,40 @@ int main(int argc,  char *argv[])
 		     err(1, "fork failed");
 
 		if(pid == 0) {
+		
+
+		char buffer[80];	
+		ssize_t r, rc;
+		size_t maxread;
+		
+		printf("\nabout to read from client\n");
+
+		r = -1;
+        	rc = 0;
+        	maxread = sizeof(buffer) - 1; /* leave room for a 0 byte */
+        	while ((r != 0) && rc < maxread) {
+                	r = read(clientsd, buffer + rc, maxread - rc);
+                	if (r == -1) {
+                        	if (errno != EINTR)
+                                	err(1, "read failed");
+                	} else
+                        	rc += r;
+        	}
+        /*
+  	 * we must make absolutely sure buffer has a terminating 0 byte
+         * if we are to use it as a C string
+         *                        */
+        buffer[rc] = '\0';
+
+        printf("client  sent:  %s",buffer);
+
+
+
+
+
+
+
+
 			ssize_t written, w;
 			/*
 			 * write the message to the client, being sure to
@@ -166,7 +200,7 @@ int main(int argc,  char *argv[])
 				}
 				else
 					written += w;
-			}
+			} 
 			close(clientsd);
 			exit(0);
 		}

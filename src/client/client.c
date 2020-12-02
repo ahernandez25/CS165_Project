@@ -90,7 +90,35 @@ int main(int argc, char *argv[])
 	    == -1)
 		err(1, "connect failed");
 
-	/*
+	char filename[80];
+	strlcpy(filename, "fileToSend.txt", sizeof(filename));
+	//printf("Enter file name : ");
+	//fgets(filename, sizeof(filename), stdin);
+
+	printf("\n filename to send: %s\n", filename);	
+	ssize_t written, w;
+
+	w = 0;
+
+        written = 0;
+        while (written < strlen(filename)) {
+        	
+		w = write(sd, filename + written, strlen(filename) - written);
+                if (w == -1) {
+                	if (errno != EINTR)
+                        	err(1, "write failed");
+                }
+                else
+                	written += w;
+        }
+	
+	printf("\n\n file name sent to server");
+
+
+
+
+	/* READS MESSAGE FROM BUFFER
+ 	 * --------------------------------------------------------
 	 * finally, we are connected. find out what magnificent wisdom
 	 * our server is going to send to us - since we really don't know
 	 * how much data the server could send to us, we have decided

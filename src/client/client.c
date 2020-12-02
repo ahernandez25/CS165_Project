@@ -31,7 +31,7 @@
 #include <string.h>
 #include <unistd.h>
 
-
+#include "../murmur/murmur3.c"
 
 static void usage()
 {
@@ -98,10 +98,13 @@ int main(int argc, char *argv[])
 	printf("\n filename to send: %s\n", filename);	
 	ssize_t written, w;
 
-	w = 0;
+	/* HANGS WHEN USING LOOP
+ 	* -----------------------
+ 	
+  	w = 0;
 
         written = 0;
-        while (written < strlen(filename)) {
+         while (written < strlen(filename)) {
         	
 		w = write(sd, filename + written, strlen(filename) - written);
                 if (w == -1) {
@@ -110,9 +113,9 @@ int main(int argc, char *argv[])
                 }
                 else
                 	written += w;
-        }
-	
-	printf("\n\n file name sent to server");
+        }*/
+	w = write(sd, filename, sizeof(filename));
+	printf("\n\n file name sent to server: %s", filename);
 
 
 
@@ -134,6 +137,9 @@ int main(int argc, char *argv[])
 	r = -1;
 	rc = 0;
 	maxread = sizeof(buffer) - 1; /* leave room for a 0 byte */
+
+/*	SERVER ENDS CONNECTION BEFORE ABLE TO READ WHEN USING LOOP
+ * 	printf("\n about to read\n");
 	while ((r != 0) && rc < maxread) {
 		r = read(sd, buffer + rc, maxread - rc);
 		if (r == -1) {
@@ -141,13 +147,13 @@ int main(int argc, char *argv[])
 				err(1, "read failed");
 		} else
 			rc += r;
-	}
+	} */
 	/*
 	 * we must make absolutely sure buffer has a terminating 0 byte
 	 * if we are to use it as a C string
 	 */
-	buffer[rc] = '\0';
-
+	buffer[80] = '\0';
+	r = read(sd, buffer, sizeof(buffer));
 	printf("Server sent:  %s",buffer);
 	close(sd);
 	return(0);

@@ -53,17 +53,17 @@ int main(int argc, char *argv[])
 	if (argc != 3)
 		usage();
 
-        p = strtoul(argv[2], &ep, 10);
-        if (*argv[2] == '\0' || *ep != '\0') {
+        p = strtoul(argv[1], &ep, 10);
+        if (*argv[1] == '\0' || *ep != '\0') {
 		/* parameter wasn't a number, or was empty */
-		fprintf(stderr, "%s - not a number\n", argv[2]);
+		fprintf(stderr, "%s - not a number\n", argv[1]);
 		usage();
 	}
         if ((errno == ERANGE && p == ULONG_MAX) || (p > USHRT_MAX)) {
 		/* It's a number, but it either can't fit in an unsigned
 		 * long, or is too big for an unsigned short
 		 */
-		fprintf(stderr, "%s - value out of range\n", argv[2]);
+		fprintf(stderr, "%s - value out of range\n", argv[1]);
 		usage();
 	}
 	/* now safe to do this */
@@ -75,7 +75,8 @@ int main(int argc, char *argv[])
 	memset(&server_sa, 0, sizeof(server_sa));
 	server_sa.sin_family = AF_INET;
 	server_sa.sin_port = htons(port);
-	server_sa.sin_addr.s_addr = inet_addr(argv[1]);
+	//server_sa.sin_addr.s_addr = inet_addr(argv[1]) /*reads IP in from console */
+	server_sa.sin_addr.s_addr = inet_addr("127.0.0.1");
 	if (server_sa.sin_addr.s_addr == INADDR_NONE) {
 		fprintf(stderr, "Invalid IP address %s\n", argv[1]);
 		usage();
@@ -91,7 +92,7 @@ int main(int argc, char *argv[])
 		err(1, "connect failed");
 
 	char filename[80];
-	strlcpy(filename, "fileToSend.txt", sizeof(filename));
+	strlcpy(filename, argv[2], sizeof(filename));
 	//printf("Enter file name : ");
 	//fgets(filename, sizeof(filename), stdin);
 
@@ -134,9 +135,9 @@ int main(int argc, char *argv[])
 	 * we also make sure we handle EINTR in case we got interrupted
 	 * by a signal.
 	 */
-	r = -1;
-	rc = 0;
-	maxread = sizeof(buffer) - 1; /* leave room for a 0 byte */
+	//r = -1;
+	//rc = 0;
+	//maxread = sizeof(buffer) - 1; /* leave room for a 0 byte */
 
 /*	SERVER ENDS CONNECTION BEFORE ABLE TO READ WHEN USING LOOP
  * 	printf("\n about to read\n");
@@ -152,9 +153,10 @@ int main(int argc, char *argv[])
 	 * we must make absolutely sure buffer has a terminating 0 byte
 	 * if we are to use it as a C string
 	 */
-	buffer[80] = '\0';
-	r = read(sd, buffer, sizeof(buffer));
-	printf("Server sent:  %s",buffer);
+	//buffer[80] = '\0';
+	//r = read(sd, buffer, sizeof(buffer));
+	//printf("Server sent:  %s",buffer);
+	printf("\nclose client\n");
 	close(sd);
 	return(0);
 }

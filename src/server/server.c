@@ -155,7 +155,7 @@ int main(int argc,  char *argv[])
 		ssize_t r, rc;
 		size_t maxread;
 		
-		printf("\nabout to read from client\n");
+		/* printf("\nabout to read from client\n");*/
 
 		r = -1;
         	rc = 0;
@@ -168,39 +168,36 @@ int main(int argc,  char *argv[])
                 	} else
                         	rc += r;
         	}
-        /*
-  	 * we must make absolutely sure buffer has a terminating 0 byte
-         * if we are to use it as a C string
-         *                        */
-        buffer[rc] = '\0';
+        	/*
+  	 	* we must make absolutely sure buffer has a terminating 0 byte
+         	* if we are to use it as a C string
+         	*                        */
+        	buffer[rc] = '\0';
 
-        printf("client  sent:  %s",buffer);
-
-
+        	printf("client  sent:  %s",buffer);
 
 
 
 
-
-
-			ssize_t written, w;
-			/*
-			 * write the message to the client, being sure to
-			 * handle a short write, or being interrupted by
-			 * a signal before we could write anything.
-			 */
-			w = 0;
-			written = 0;
-			while (written < strlen(buffer)) {
-				w = write(clientsd, buffer + written,
-				    strlen(buffer) - written);
-				if (w == -1) {
-					if (errno != EINTR)
-						err(1, "write failed");
+		ssize_t written, w;
+		/*
+		 * write the message to the client, being sure to
+		 * handle a short write, or being interrupted by
+		 * a signal before we could write anything.
+		 */
+		w = 0;
+		written = 0;
+		while (written < strlen(buffer)) {
+			w = write(clientsd, buffer + written,
+			strlen(buffer) - written);
+			if (w == -1) {
+				if (errno != EINTR)
+					err(1, "write failed");
 				}
 				else
 					written += w;
-			} 
+			}
+			printf("\nwrote to client\n"); 
 			close(clientsd);
 			exit(0);
 		}

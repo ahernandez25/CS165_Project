@@ -31,7 +31,7 @@
 #include <string.h>
 #include <unistd.h>
 
-
+#include "../murmur/murmur3.c"
 
 static void usage()
 {

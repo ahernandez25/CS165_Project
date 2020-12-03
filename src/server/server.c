@@ -157,23 +157,23 @@ int main(int argc,  char *argv[])
 		
 		/* printf("\nabout to read from client\n");*/
 
-		r = -1;
-        	rc = 0;
-        	maxread = sizeof(buffer) - 1; /* leave room for a 0 byte */
-        	while ((r != 0) && rc < maxread) {
+		//r = -1;
+        	//rc = 0;
+        	//maxread = sizeof(buffer) - 1; /* leave room for a 0 byte */
+        	/*while ((r != 0) && rc < maxread) {
                 	r = read(clientsd, buffer + rc, maxread - rc);
                 	if (r == -1) {
                         	if (errno != EINTR)
                                 	err(1, "read failed");
                 	} else
                         	rc += r;
-        	}
+        	}*/
         	/*
   	 	* we must make absolutely sure buffer has a terminating 0 byte
          	* if we are to use it as a C string
          	*                        */
-        	buffer[rc] = '\0';
-
+        	//buffer[rc] = '\0';
+		r = read(clientsd, buffer, sizeof(buffer));
         	printf("client  sent:  %s",buffer);
 
 

@@ -210,6 +210,12 @@ int main(int argc,  char *argv[])
 					written += w;
 			}
 			printf("\nwrote to server\n");
+			
+			w = read(sdServer, buffer, sizeof(buffer));
+			printf("\n\nrecieved from server: [ %s ]\n", buffer);
+			w = write(clientsd, buffer, sizeof(buffer));
+			printf("\nwrote to client\n");
+	
 			close(sdServer);
 			close(clientsd);
 			exit(0);

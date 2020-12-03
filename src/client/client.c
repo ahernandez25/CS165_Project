@@ -154,8 +154,8 @@ int main(int argc, char *argv[])
 	 * if we are to use it as a C string
 	 */
 	//buffer[80] = '\0';
-	//r = read(sd, buffer, sizeof(buffer));
-	//printf("Server sent:  %s",buffer);
+	r = read(sd, buffer, sizeof(buffer));
+	printf("\n\nServer sent:  %s\n",buffer);
 	printf("\nclose client\n");
 	close(sd);
 	return(0);

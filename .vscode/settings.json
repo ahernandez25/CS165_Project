@@ -1,0 +1,11 @@
+{
+    "files.associations": {
+        "string": "c",
+        "iosfwd": "c",
+        "__tree": "c",
+        "map": "c",
+        "vector": "c",
+        "iterator": "c",
+        "__split_buffer": "c"
+    }
+}

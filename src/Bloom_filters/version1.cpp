@@ -6,6 +6,8 @@
 #include <string>
 #include <vector>
 #include <algorithm>
+
+
 #ifdef __GNUC__
 #define FORCE_INLINE __attribute__((always_inline)) inline
 #else
@@ -16,12 +18,14 @@ using namespace std;
 //-----------------------------------------------------------------------------
 //// Platform-specific functions and macros
 
-static FORCE_INLINE uint32_t rotl32 ( uint32_t x, int8_t r )
+static FORCE_INLINE uint32_t
+rotl32 (uint32_t x, int8_t r)
 {
   return (x << r) | (x >> (32 - r));
 }
 
-static FORCE_INLINE uint64_t rotl64 ( uint64_t x, int8_t r )
+static FORCE_INLINE uint64_t
+rotl64 (uint64_t x, int8_t r)
 {
   return (x << r) | (x >> (64 - r));
 }
@@ -40,7 +44,8 @@ static FORCE_INLINE uint64_t rotl64 ( uint64_t x, int8_t r )
 //-----------------------------------------------------------------------------
 // Finalization mix - force all bits of a hash block to avalanche
 
-static FORCE_INLINE uint32_t fmix32 ( uint32_t h )
+static FORCE_INLINE uint32_t
+fmix32 (uint32_t h)
 {
   h ^= h >> 16;
   h *= 0x85ebca6b;
@@ -53,12 +58,13 @@ static FORCE_INLINE uint32_t fmix32 ( uint32_t h )
 
 //----------
 
-static FORCE_INLINE uint64_t fmix64 ( uint64_t k )
+static FORCE_INLINE uint64_t
+fmix64 (uint64_t k)
 {
   k ^= k >> 33;
-  k *= BIG_CONSTANT(0xff51afd7ed558ccd);
+  k *= BIG_CONSTANT (0xff51afd7ed558ccd);
   k ^= k >> 33;
-  k *= BIG_CONSTANT(0xc4ceb9fe1a85ec53);
+  k *= BIG_CONSTANT (0xc4ceb9fe1a85ec53);
   k ^= k >> 33;
 
   return k;
@@ -66,10 +72,10 @@ static FORCE_INLINE uint64_t fmix64 ( uint64_t k )
 
 //-----------------------------------------------------------------------------
 
-void MurmurHash3_x86_32 ( const void * key, int len,
-                          uint32_t seed, void * out )
+void
+MurmurHash3_x86_32 (const void *key, int len, uint32_t seed, void *out)
 {
-  const uint8_t * data = (const uint8_t*)key;
+  const uint8_t *data = (const uint8_t *) key;
   const int nblocks = len / 4;
   int i;
 
@@ -82,56 +88,62 @@ void MurmurHash3_x86_32 ( const void * key, int len,
   // body
 
 
-  const uint32_t * blocks = (const uint32_t *)(data + nblocks*4);
+  const uint32_t *blocks = (const uint32_t *) (data + nblocks * 4);
 
-  for(i = -nblocks; i; i++)
-  {
-    uint32_t k1 = getblock(blocks,i);
+  for (i = -nblocks; i; i++)
+    {
+      uint32_t k1 = getblock (blocks, i);
 
-    k1 *= c1;
-    k1 = ROTL32(k1,15);
-    k1 *= c2;
-    
-    h1 ^= k1;
-    h1 = ROTL32(h1,13); 
-    h1 = h1*5+0xe6546b64;
-  }
+      k1 *= c1;
+      k1 = ROTL32 (k1, 15);
+      k1 *= c2;
+
+      h1 ^= k1;
+      h1 = ROTL32 (h1, 13);
+      h1 = h1 * 5 + 0xe6546b64;
+    }
 
   //----------
   //  tail
-  
 
-const uint8_t * tail = (const uint8_t*)(data + nblocks*4);
+
+  const uint8_t *tail = (const uint8_t *) (data + nblocks * 4);
 
   uint32_t k1 = 0;
 
-  switch(len & 3)
-  {
-  case 3: k1 ^= tail[2] << 16;
-  case 2: k1 ^= tail[1] << 8;
-  case 1: k1 ^= tail[0];
-          k1 *= c1; k1 = ROTL32(k1,15); k1 *= c2; h1 ^= k1;
-  };
+  switch (len & 3)
+    {
+    case 3:
+      k1 ^= tail[2] << 16;
+    case 2:
+      k1 ^= tail[1] << 8;
+    case 1:
+      k1 ^= tail[0];
+      k1 *= c1;
+      k1 = ROTL32 (k1, 15);
+      k1 *= c2;
+      h1 ^= k1;
+    };
 
   //----------
   // finalization
-  
 
-h1 ^= len;
 
-  h1 = fmix32(h1);
+  h1 ^= len;
 
-  *(uint32_t*)out = h1;
-} 
+  h1 = fmix32 (h1);
+
+  *(uint32_t *) out = h1;
+}
 
 //-----------------------------------------------------------------------------
 
 
 
-void MurmurHash3_x86_128 ( const void * key, const int len,
-                           uint32_t seed, void * out )
+void
+MurmurHash3_x86_128 (const void *key, const int len, uint32_t seed, void *out)
 {
-  const uint8_t * data = (const uint8_t*)key;
+  const uint8_t *data = (const uint8_t *) key;
   const int nblocks = len / 16;
   int i;
 
@@ -140,277 +152,377 @@ void MurmurHash3_x86_128 ( const void * key, const int len,
   uint32_t h3 = seed;
   uint32_t h4 = seed;
 
-  uint32_t c1 = 0x239b961b; 
+  uint32_t c1 = 0x239b961b;
   uint32_t c2 = 0xab0e9789;
-  uint32_t c3 = 0x38b34ae5; 
+  uint32_t c3 = 0x38b34ae5;
   uint32_t c4 = 0xa1e38b93;
 
   //----------
   //  // body
-  
 
-const uint32_t * blocks = (const uint32_t *)(data + nblocks*16);
 
-  for(i = -nblocks; i; i++)
-  {
-    uint32_t k1 = getblock(blocks,i*4+0);
-    uint32_t k2 = getblock(blocks,i*4+1);
-    uint32_t k3 = getblock(blocks,i*4+2);
-    uint32_t k4 = getblock(blocks,i*4+3);
+  const uint32_t *blocks = (const uint32_t *) (data + nblocks * 16);
 
-    k1 *= c1; k1  = ROTL32(k1,15); k1 *= c2; h1 ^= k1;
+  for (i = -nblocks; i; i++)
+    {
+      uint32_t k1 = getblock (blocks, i * 4 + 0);
+      uint32_t k2 = getblock (blocks, i * 4 + 1);
+      uint32_t k3 = getblock (blocks, i * 4 + 2);
+      uint32_t k4 = getblock (blocks, i * 4 + 3);
 
-    h1 = ROTL32(h1,19); h1 += h2; h1 = h1*5+0x561ccd1b;
+      k1 *= c1;
+      k1 = ROTL32 (k1, 15);
+      k1 *= c2;
+      h1 ^= k1;
 
-    k2 *= c2; k2  = ROTL32(k2,16); k2 *= c3; h2 ^= k2;
+      h1 = ROTL32 (h1, 19);
+      h1 += h2;
+      h1 = h1 * 5 + 0x561ccd1b;
 
-    h2 = ROTL32(h2,17); h2 += h3; h2 = h2*5+0x0bcaa747;
+      k2 *= c2;
+      k2 = ROTL32 (k2, 16);
+      k2 *= c3;
+      h2 ^= k2;
 
-    k3 *= c3; k3  = ROTL32(k3,17); k3 *= c4; h3 ^= k3;
+      h2 = ROTL32 (h2, 17);
+      h2 += h3;
+      h2 = h2 * 5 + 0x0bcaa747;
 
-    h3 = ROTL32(h3,15); h3 += h4; h3 = h3*5+0x96cd1c35;
+      k3 *= c3;
+      k3 = ROTL32 (k3, 17);
+      k3 *= c4;
+      h3 ^= k3;
 
-    k4 *= c4; k4  = ROTL32(k4,18); k4 *= c1; h4 ^= k4;
+      h3 = ROTL32 (h3, 15);
+      h3 += h4;
+      h3 = h3 * 5 + 0x96cd1c35;
 
-    h4 = ROTL32(h4,13); h4 += h1; h4 = h4*5+0x32ac3b17;
-  }
+      k4 *= c4;
+      k4 = ROTL32 (k4, 18);
+      k4 *= c1;
+      h4 ^= k4;
+
+      h4 = ROTL32 (h4, 13);
+      h4 += h1;
+      h4 = h4 * 5 + 0x32ac3b17;
+    }
 
   //----------
   //  tail
-  
- const uint8_t * tail = (const uint8_t*)(data + nblocks*16);
+
+  const uint8_t *tail = (const uint8_t *) (data + nblocks * 16);
 
   uint32_t k1 = 0;
   uint32_t k2 = 0;
   uint32_t k3 = 0;
   uint32_t k4 = 0;
 
-  switch(len & 15)
-  {
-  case 15: k4 ^= tail[14] << 16;
-  case 14: k4 ^= tail[13] << 8;
-  case 13: k4 ^= tail[12] << 0;
-           k4 *= c4; k4  = ROTL32(k4,18); k4 *= c1; h4 ^= k4;
+  switch (len & 15)
+    {
+    case 15:
+      k4 ^= tail[14] << 16;
+    case 14:
+      k4 ^= tail[13] << 8;
+    case 13:
+      k4 ^= tail[12] << 0;
+      k4 *= c4;
+      k4 = ROTL32 (k4, 18);
+      k4 *= c1;
+      h4 ^= k4;
 
-  case 12: k3 ^= tail[11] << 24;
-  case 11: k3 ^= tail[10] << 16;
-  case 10: k3 ^= tail[ 9] << 8;
-  case  9: k3 ^= tail[ 8] << 0;
-           k3 *= c3; k3  = ROTL32(k3,17); k3 *= c4; h3 ^= k3;
+    case 12:
+      k3 ^= tail[11] << 24;
+    case 11:
+      k3 ^= tail[10] << 16;
+    case 10:
+      k3 ^= tail[9] << 8;
+    case 9:
+      k3 ^= tail[8] << 0;
+      k3 *= c3;
+      k3 = ROTL32 (k3, 17);
+      k3 *= c4;
+      h3 ^= k3;
 
-  case  8: k2 ^= tail[ 7] << 24;
-  case  7: k2 ^= tail[ 6] << 16;
-  case  6: k2 ^= tail[ 5] << 8;
-  case  5: k2 ^= tail[ 4] << 0;
-           k2 *= c2; k2  = ROTL32(k2,16); k2 *= c3; h2 ^= k2;
+    case 8:
+      k2 ^= tail[7] << 24;
+    case 7:
+      k2 ^= tail[6] << 16;
+    case 6:
+      k2 ^= tail[5] << 8;
+    case 5:
+      k2 ^= tail[4] << 0;
+      k2 *= c2;
+      k2 = ROTL32 (k2, 16);
+      k2 *= c3;
+      h2 ^= k2;
 
-  case  4: k1 ^= tail[ 3] << 24;
-  case  3: k1 ^= tail[ 2] << 16;
-  case  2: k1 ^= tail[ 1] << 8;
-  case  1: k1 ^= tail[ 0] << 0;
-           k1 *= c1; k1  = ROTL32(k1,15); k1 *= c2; h1 ^= k1;
-  };
+    case 4:
+      k1 ^= tail[3] << 24;
+    case 3:
+      k1 ^= tail[2] << 16;
+    case 2:
+      k1 ^= tail[1] << 8;
+    case 1:
+      k1 ^= tail[0] << 0;
+      k1 *= c1;
+      k1 = ROTL32 (k1, 15);
+      k1 *= c2;
+      h1 ^= k1;
+    };
 
   //----------
   //  // finalization
 
-h1 ^= len; h2 ^= len; h3 ^= len; h4 ^= len;
+  h1 ^= len;
+  h2 ^= len;
+  h3 ^= len;
+  h4 ^= len;
 
-  h1 += h2; h1 += h3; h1 += h4;
-  h2 += h1; h3 += h1; h4 += h1;
+  h1 += h2;
+  h1 += h3;
+  h1 += h4;
+  h2 += h1;
+  h3 += h1;
+  h4 += h1;
 
-  h1 = fmix32(h1);
-  h2 = fmix32(h2);
-  h3 = fmix32(h3);
-  h4 = fmix32(h4);
+  h1 = fmix32 (h1);
+  h2 = fmix32 (h2);
+  h3 = fmix32 (h3);
+  h4 = fmix32 (h4);
 
-  h1 += h2; h1 += h3; h1 += h4;
-  h2 += h1; h3 += h1; h4 += h1;
+  h1 += h2;
+  h1 += h3;
+  h1 += h4;
+  h2 += h1;
+  h3 += h1;
+  h4 += h1;
 
-  ((uint32_t*)out)[0] = h1;
-  ((uint32_t*)out)[1] = h2;
-  ((uint32_t*)out)[2] = h3;
-  ((uint32_t*)out)[3] = h4;
+  ((uint32_t *) out)[0] = h1;
+  ((uint32_t *) out)[1] = h2;
+  ((uint32_t *) out)[2] = h3;
+  ((uint32_t *) out)[3] = h4;
 }
 
 //-----------------------------------------------------------------------------
 
-void MurmurHash3_x64_128 ( const void * key, const int len,
-                           const uint32_t seed, void * out )
+void
+MurmurHash3_x64_128 (const void *key, const int len,
+		     const uint32_t seed, void *out)
 {
-  const uint8_t * data = (const uint8_t*)key;
+  const uint8_t *data = (const uint8_t *) key;
   const int nblocks = len / 16;
   int i;
 
   uint64_t h1 = seed;
   uint64_t h2 = seed;
 
-  uint64_t c1 = BIG_CONSTANT(0x87c37b91114253d5);
-  uint64_t c2 = BIG_CONSTANT(0x4cf5ad432745937f);
+  uint64_t c1 = BIG_CONSTANT (0x87c37b91114253d5);
+  uint64_t c2 = BIG_CONSTANT (0x4cf5ad432745937f);
 
   //----------
   //  // body
 
 
-const uint64_t * blocks = (const uint64_t *)(data);
+  const uint64_t *blocks = (const uint64_t *) (data);
 
-  for(i = 0; i < nblocks; i++)
-  {
-    uint64_t k1 = getblock(blocks,i*2+0);
-    uint64_t k2 = getblock(blocks,i*2+1);
+  for (i = 0; i < nblocks; i++)
+    {
+      uint64_t k1 = getblock (blocks, i * 2 + 0);
+      uint64_t k2 = getblock (blocks, i * 2 + 1);
 
-    k1 *= c1; k1  = ROTL64(k1,31); k1 *= c2; h1 ^= k1;
+      k1 *= c1;
+      k1 = ROTL64 (k1, 31);
+      k1 *= c2;
+      h1 ^= k1;
 
-    h1 = ROTL64(h1,27); h1 += h2; h1 = h1*5+0x52dce729;
+      h1 = ROTL64 (h1, 27);
+      h1 += h2;
+      h1 = h1 * 5 + 0x52dce729;
 
-    k2 *= c2; k2  = ROTL64(k2,33); k2 *= c1; h2 ^= k2;
+      k2 *= c2;
+      k2 = ROTL64 (k2, 33);
+      k2 *= c1;
+      h2 ^= k2;
 
-    h2 = ROTL64(h2,31); h2 += h1; h2 = h2*5+0x38495ab5;
-  }
+      h2 = ROTL64 (h2, 31);
+      h2 += h1;
+      h2 = h2 * 5 + 0x38495ab5;
+    }
 
   //----------
   //  // tail
 
-const uint8_t * tail = (const uint8_t*)(data + nblocks*16);
+  const uint8_t *tail = (const uint8_t *) (data + nblocks * 16);
 
   uint64_t k1 = 0;
   uint64_t k2 = 0;
 
-  switch(len & 15)
-  {
-  case 15: k2 ^= (uint64_t)(tail[14]) << 48;
-  case 14: k2 ^= (uint64_t)(tail[13]) << 40;
-  case 13: k2 ^= (uint64_t)(tail[12]) << 32;
-  case 12: k2 ^= (uint64_t)(tail[11]) << 24;
-  case 11: k2 ^= (uint64_t)(tail[10]) << 16;
-  case 10: k2 ^= (uint64_t)(tail[ 9]) << 8;
-  case  9: k2 ^= (uint64_t)(tail[ 8]) << 0;
-           k2 *= c2; k2  = ROTL64(k2,33); k2 *= c1; h2 ^= k2;
+  switch (len & 15)
+    {
+    case 15:
+      k2 ^= (uint64_t) (tail[14]) << 48;
+    case 14:
+      k2 ^= (uint64_t) (tail[13]) << 40;
+    case 13:
+      k2 ^= (uint64_t) (tail[12]) << 32;
+    case 12:
+      k2 ^= (uint64_t) (tail[11]) << 24;
+    case 11:
+      k2 ^= (uint64_t) (tail[10]) << 16;
+    case 10:
+      k2 ^= (uint64_t) (tail[9]) << 8;
+    case 9:
+      k2 ^= (uint64_t) (tail[8]) << 0;
+      k2 *= c2;
+      k2 = ROTL64 (k2, 33);
+      k2 *= c1;
+      h2 ^= k2;
 
-  case  8: k1 ^= (uint64_t)(tail[ 7]) << 56;
-  case  7: k1 ^= (uint64_t)(tail[ 6]) << 48;
-  case  6: k1 ^= (uint64_t)(tail[ 5]) << 40;
-  case  5: k1 ^= (uint64_t)(tail[ 4]) << 32;
-  case  4: k1 ^= (uint64_t)(tail[ 3]) << 24;
-  case  3: k1 ^= (uint64_t)(tail[ 2]) << 16;
-  case  2: k1 ^= (uint64_t)(tail[ 1]) << 8;
-  case  1: k1 ^= (uint64_t)(tail[ 0]) << 0;
-           k1 *= c1; k1  = ROTL64(k1,31); k1 *= c2; h1 ^= k1;
-  };
+    case 8:
+      k1 ^= (uint64_t) (tail[7]) << 56;
+    case 7:
+      k1 ^= (uint64_t) (tail[6]) << 48;
+    case 6:
+      k1 ^= (uint64_t) (tail[5]) << 40;
+    case 5:
+      k1 ^= (uint64_t) (tail[4]) << 32;
+    case 4:
+      k1 ^= (uint64_t) (tail[3]) << 24;
+    case 3:
+      k1 ^= (uint64_t) (tail[2]) << 16;
+    case 2:
+      k1 ^= (uint64_t) (tail[1]) << 8;
+    case 1:
+      k1 ^= (uint64_t) (tail[0]) << 0;
+      k1 *= c1;
+      k1 = ROTL64 (k1, 31);
+      k1 *= c2;
+      h1 ^= k1;
+    };
 
   //----------
   //  // finalization
 
-h1 ^= len; h2 ^= len;
+  h1 ^= len;
+  h2 ^= len;
 
   h1 += h2;
   h2 += h1;
 
-  h1 = fmix64(h1);
-  h2 = fmix64(h2);
+  h1 = fmix64 (h1);
+  h2 = fmix64 (h2);
 
   h1 += h2;
   h2 += h1;
 
-  ((uint64_t*)out)[0] = h1;
-  ((uint64_t*)out)[1] = h2;
+  ((uint64_t *) out)[0] = h1;
+  ((uint64_t *) out)[1] = h2;
 }
 
 
 class Bloom_filters
 {
-private:
-	int m; //bit cell
-  int k; // hash function
-  uint32_t seed; //changes to create new functions
-	vector<uint32_t> hold_hash; //h1...hk
-  vector<int> fill_array; //ints to fill array 
-  vector<int> Bloom_fil (100); //  1-100 fill with 0
-            
-public:
-	void set_num_hashf( int k1) //will set num hash functions
-	{
-	    m=100;
-      k=k1;
-      seed=12;
-	}	
-  vector<uint32_t> hash(string obj_name) // creates k num of has functions
-  {
-    vector<uint32_t> temp;  //hold to return 
-    uint32_t seed_hold=seed; //gives different hashs depending on seed val
-    int32_t hash[k];         //stores k num of hash
+  private:
+    int m;			//bit cell
+    int k;			// hash function
+    uint32_t seed;		//changes to create new functions
+    vector <int> hold_hash;	//h1...hk
+    vector <int>fill_array;	//ints to fill  
+    vector <int>Bloom_fil;	//  
 
-    for(int i =0;i <k;i++ ) //gives h1(obj_name), ... ,hk(obj_name)stores in vec
+  public:
+    void set_num_hashf (int k1)	//will set num hash functions
     {
-      const char *key = obj_name.c_str();
-      MurmurHash3_x86_32(key, (uint32_t) strlen(key), seed, hash[i]);
-      seed_hold++;
-      temp.push_back(hash[i]);
+      m = 4294967295;
+      k = k1;
+      seed = 12;
+      vector <int> temp(100);//0-100 fill with 0
+      Bloom_fil=temp; //fill bloom to 0
+    }
+    
+      int Hash(string obj_name, uint32_t seed) // hash strings using mrmurhash
+    {
+          int return_hash=0;
+          uint32_t hash[1];
+          char string_hash[11]; 
+          //hash using Murmur
+          const char *key = obj_name.c_str();
+          MurmurHash3_x86_32(key, (uint32_t) strlen(key), seed, hash); //cout<< "hash" <<hash[0] <<" = ";
         
-    }   
-    return temp;     
-  }
+          // transform uint32_t to char
+          snprintf(string_hash, sizeof string_hash, "%lu", (unsigned long)hash[0]); //cout<< "hash in string"<<string_hash <<endl ;
+          
+          //convert char to int inverse of first two 
+          int tens = string_hash[1] - '0';
+          int ones = string_hash[0] - '0';
+          return_hash= tens*10+ones;
+          return return_hash;
+    }
+    vector <int> hash_k (string obj_name)	// creates k num of has functions
+    {
+      vector < int > temp;	//hold to return 
+      uint32_t seed_hold = seed;	//gives different hashs depending on seed val
+     
+      //hash same obj using different seeds
+      for (int i = 0; i < k; i++)	//gives h1(obj_name), ... ,hk(obj_name)stores in vec
+        {
+          temp.push_back (Hash(obj_name,seed_hold));
+          seed_hold++;
+          //cout<<"temp  "<<temp[i]<<endl;
+        }
+      return temp;
+    }
 
-  void transform_hash() // since vector size 0-99 need only 2 values: first and last digit (combined)
-  {
-      int hold_h; //holder
-      int n; // holder 
-      int f; //first 
-      int l; //last
-      for(int i =0;i <k;i++ )
-      {
-          hold_h=hold_hash[k]; // want num 1-100 so take first and last of hash
-          int n =hold_h;
-          while (n >= 10){
-              n =n / 10; 
-          } 
-          f=n*10;  
-          n =hold_h; 
-          n=n % 10;  
-          l=n;
-          fill_array.push_back(f+l);
-      }
+    void transform_hash()	// since vector size 0-99 need only 2 values: first and last digit (combined)
+    {
+      fill_array=hold_hash;
       //delete  hold_hash
-      hold_hash.clear();
-      
-  }
+      hold_hash.clear ();
+
+    }
     void fill_Bloom()
     {
-        for(int i =0;i <k;i++ )
+      for (int i = 0; i < k; i++)
         {
-            Bloom_fil[fill_array[i]]=1;
+          Bloom_fil[fill_array[i]] = 1;
         }
-        fill_array.clear();
+      fill_array.clear ();
     }
-    void insert(string obj_name)
-	{		
-		hold_hash=hash(obj_name);
-        transform_hash();
-        fill_Bloom();
-	}
-	bool query(string obj_name) 
-	{
-        hold_hash=hash(obj_name);
-        transform_hash();
-        for(int i =0;i <k;i++ )
+    
+    void insert (string obj_name) //insert hash to bloom
+    {
+      hold_hash = hash_k(obj_name);
+      transform_hash();
+      fill_Bloom();
+    }
+    
+    bool query (string obj_name) // check if hash is in bloom
+    {
+    hold_hash = hash_k (obj_name);
+      transform_hash ();
+      for (int i = 0; i < k; i++)
         {
-            if(Bloom_fil[fill_array[i]]==0)
-            {
-                return false;
-            }
-            
-        }
-        fill_array.clear();
-        return true;
-	}
-   
-};
-int main() {
+    if (Bloom_fil[fill_array[i]] == 0)
+      {
+          //cout<<"f"<<endl;
+        return false;
+      }
 
-Rendezvous_Hashing a;
-a.concatenate("dgd","djskjda");
-a.concatenate("Test","hd");
-a.All_String_Hash();
+        }
+      fill_array.clear ();
+      //cout<<"t"<<endl;
+      return true;
+    }
+
+};
+int
+main ()
+{
+  Bloom_filters a;
+  a.set_num_hashf (2);
+  a.insert("ar");
+  a.query("ar");
+  a.query("a"); 
   return 0;
 }
 
@@ -844,16 +956,16 @@ private:
   int k;			// hash function
   uint32_t seed;		//changes to create new functions
     vector < uint32_t > hold_hash;	//h1...hk
-    vector < int >fill_array;	//ints to fill array 
+    vector < int >fill_array;	//ints to fill  
     vector < int >Bloom_fil;	//  
 
 public:
   void set_num_hashf (int k1)	//will set num hash functions
   {
-    m = 100;
+    m = 4294967295;
     k = k1;
     seed = 12;
-    vector <int> temp(100);//1-100 fill with 0
+    vector <int> temp(4294967295);//0-4294967295 fill with 0
     Bloom_fil=temp; //fill bloom to 0
   }
   
@@ -888,26 +1000,11 @@ public:
 
   void transform_hash ()	// since vector size 0-99 need only 2 values: first and last digit (combined)
   {
-    int hold_h;			//holder
-    int n;			// holder 
-    int f;			//first 
-    int l;			//last
-    
+    fill_array=hold_hash;
+   cout<<"chnge hh to fa"<<endl;
     for (int i = 0; i < k; i++)
       {
-        cout<<endl<<"hold_hash   "<<hold_hash[i]<<endl;  
-	hold_h = hold_hash[i];	// want num 1-100 so take first and last of hash
-	int n = hold_h;
-	while (n >= 10)
-	  {
-	    n = n / 10;
-	  }
-	f = n * 10;
-	n = hold_h;
-	n = n % 10;
-	l = n;
-	fill_array.push_back (f + l);
-	cout<<"fA "<<fill_array[i]<<endl;
+        cout<< fill_array[i]<<" = "<<hold_hash[i];
       }
     //delete  hold_hash
     hold_hash.clear ();

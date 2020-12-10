@@ -1,4 +1,4 @@
-#include "bloom_filter.h"
+#include "bloom_filters.h"
 
 typedef struct  {
     int m;			//bit cell
@@ -71,12 +71,13 @@ void hash_k (char obj_name[20])	// creates k num of has functions
 
 void fill_Bloom()
 {
-  for (int i = 0; i < one.k; i++)
+  int i;
+  for (i = 0; i < one.k; i++)
     {
       one.Bloom_fil[one.hold_hash[i]] = 1;
     }
   
-    for (int i = 0; i < one.m; i++)	//clear
+    for (i = 0; i < one.m; i++)	//clear
     {
       one.hold_hash[i]=0;
     }
@@ -91,7 +92,8 @@ void insert (char obj_name[20]) //insert hash to bloom
 int query (char obj_name[20]) // check if hash is in bloom 1=true 0 =false
 {
  hash_k (obj_name);
-  for (int i = 0; i < one.k; i++)
+int i;
+  for (i = 0; i < one.k; i++)
     {
         if (one.Bloom_fil[one.hold_hash[i]] == 0)
           {
@@ -100,7 +102,7 @@ int query (char obj_name[20]) // check if hash is in bloom 1=true 0 =false
           }
 
     }
-  for (int i = 0; i < one.m; i++)	//clear
+  for (i = 0; i < one.m; i++)	//clear
     {
       one.hold_hash[i]=0;
     }

@@ -7,7 +7,7 @@
 #include <stdlib.h>
 #include <stdint.h>
 
-#include "murmur3.h"
+#include "../murmur/murmur3.c"
 
 void set_num_hashf (int k1);	//will set num hash functions
 int Hash(char obj_name[20], uint32_t seed); // hash strings using mrmurhash

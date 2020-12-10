@@ -37,13 +37,18 @@
 #include <string.h>
 #include <unistd.h>
 
-
+#include "../Bloom_filters/bloom_filters.c"
 
 char * blacklisted[10] = {"file10", "file20", "file30", "file40", "file50",
 			  "file60", "file70", "file80", "file90", "file100"};
 
 void initializeBlacklisted(){
-		
+	set_num_hashf(5);
+	int i;
+
+	for(i = 0; i < 10; i++){
+		insert(blacklisted[i]);
+	}	
 }
 
 static void usage()
@@ -63,13 +68,17 @@ static void kidhandler(int signum) {
 int main(int argc,  char *argv[])
 {
 	struct sockaddr_in sockname, client, server;
-	char inputFile[80], *ep, *ep2;
+	char inputFile[20], *ep, *ep2;
 	struct sigaction sa;
 	int sd, sdServer;
 	socklen_t clientlen, serverLen;
 	u_short port, portServer;
 	pid_t pid;
 	u_long p, p2;
+
+	/* initializes bloom filter with blacklisted objects */
+	initializeBlacklisted();
+
 
 	/*
  	 * first, figure out what port we will listen on - it should
@@ -108,7 +117,7 @@ int main(int argc,  char *argv[])
         }
         if ((errno == ERANGE && p2 == ULONG_MAX) || (p2 > USHRT_MAX)) {
                 /* It's a number, but it either can't fit in an unsigned
- *                  * long, or is too big for an unsigned short             */
+                 * long, or is too big for an unsigned short             */
                 fprintf(stderr, "%s - value out of range\n", argv[2]);
                 usage();
         }
@@ -193,92 +202,91 @@ int main(int argc,  char *argv[])
 			 * use bloom filter function to see if blacklisted
 			 **************************************************/
 			
-			
+			int isBL = query(inputFile);
+			if(isBL == 0){
 	
-			/*************************************
- 			 * if not blacklisted, checks local cache
- 			 *************************************/		
-			FILE *filePointer;
-			char readCacheFiles[60];
-			bool inCache = false;
+				/*************************************
+ 			 	* if not blacklisted, checks local cache
+ 			 	*************************************/		
+				FILE *filePointer;
+				char readCacheFiles[60];
+				int inCache = 0;
 
-			filePointer = fopen("../../src/proxy/cache.txt", "r");
+				filePointer = fopen("../../src/proxy/cache.txt", "r");
 
-			if( filePointer == NULL){
-				perror(filePointer);
-			} else{
-				while(fscanf(filePointer,"%s",readCacheFiles) == 1){
-					if(inputFile == readCacheFiles){
-						inCache = true;
+				if( filePointer == NULL){
+					perror(filePointer);
+				} else{
+					while(fscanf(filePointer,"%s",readCacheFiles) == 1){
+						if(inputFile == readCacheFiles){
+							inCache = 1;
+						}
 					}
-				}
 
-				/*while( fgets( dataToRead, 60, filePointer ) != NULL){
-					printf( "%s", dataToRead);
-				}*/ 
 				fclose(filePointer);
 				printf("read from file, file now closed");
-			}/* end read from file */
+				}/* end read from file */
 
 
-			/**********************************************
-			 * if in cache, sends file directly to client
-			 **********************************************/
-			if(inCache){
-				/*send file from cache to client*/
-			} 
+				/**********************************************
+			 	* if in cache, sends file directly to client
+			 	**********************************************/
+				if(inCache == 1){
+					/*send file from cache to client*/
+				} 
 
-			/**********************************************
-			 * if not in cache, asks server for file 
-			 **********************************************/
-			else {
+				/**********************************************
+			 	* if not in cache, asks server for file 
+			 	**********************************************/
+				else {
 				
-				memset(&server, 0, sizeof(server));
-				server.sin_family = AF_INET;
-				server.sin_port = htons(portServer);
-				server.sin_addr.s_addr = inet_addr("127.0.0.2");
-				if(server.sin_addr.s_addr == INADDR_NONE) {
-					fprintf(stderr, "Invalid IP address \n");
-					usage();
-				}
-
-				/* ok now get a socket. we don't care where... */
-				if ((sdServer=socket(AF_INET,SOCK_STREAM,0)) == -1)
-					err(1, "socket failed");
-
-				/* connect the socket to the server described in "server_sa" */
-				if (connect(sdServer, (struct sockaddr *)&server, sizeof(server)) == -1)
-					err(1, "connect failed");
-
-
-				ssize_t written, w;
-				w = 0;
-				written = 0;
-				while (written < strlen(inputFile)) {
-					w = write(sdServer, inputFile + written,
-						strlen(inputFile) - written);
-					if (w == -1) {
-						if (errno != EINTR)
-							err(1, "write failed");
+					memset(&server, 0, sizeof(server));
+					server.sin_family = AF_INET;
+					server.sin_port = htons(portServer);
+					server.sin_addr.s_addr = inet_addr("127.0.0.2");
+					if(server.sin_addr.s_addr == INADDR_NONE) {
+						fprintf(stderr, "Invalid IP address \n");
+						usage();
 					}
-					else
-						written += w;
-				}
-				printf("\nwrote to server\n");
-				
-				char serverMsg[1024];
 
-				w = read(sdServer, serverMsg, sizeof(serverMsg));
-				printf("\n\nrecieved from server: [ %s ]\n", serverMsg);
-				w = write(clientsd, serverMsg, sizeof(serverMsg));
-				printf("\nwrote to client\n");
+					/* ok now get a socket. we don't care where... */
+					if ((sdServer=socket(AF_INET,SOCK_STREAM,0)) == -1)
+						err(1, "socket failed");
+
+					/* connect the socket to the server described in "server_sa" */
+					if (connect(sdServer, (struct sockaddr *)&server, sizeof(server)) == -1)
+						err(1, "connect failed");
+
+
+					ssize_t written, w;
+					w = 0;
+					written = 0;
+					while (written < strlen(inputFile)) {
+						w = write(sdServer, inputFile + written,
+							strlen(inputFile) - written);
+						if (w == -1) {
+							if (errno != EINTR)
+								err(1, "write failed");
+						}
+						else
+							written += w;
+					}
+					printf("\nwrote to server\n");
+				
+					char serverMsg[1024];
+
+					w = read(sdServer, serverMsg, sizeof(serverMsg));
+					printf("\n\nrecieved from server: [ %s ]\n", serverMsg);
+					w = write(clientsd, serverMsg, sizeof(serverMsg));
+					printf("\nwrote to client\n");
 		
-				close(sdServer);
+					close(sdServer);
+				}
 			}
-			
-			close(clientsd);
-			exit(0);
+				
+				close(clientsd);
+				exit(0);
 		}
-		close(clientsd);
+			close(clientsd);
 	}
 }

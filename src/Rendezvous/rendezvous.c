@@ -1,6 +1,6 @@
 #include "rendezvous.h"
 
-typedef struct  {
+typedef struct r_structs {
     int object_leng; //Leng of object string
     int num_proxy;  // number of proxy
     int num_bit_conc; //char [][num_bit_conc] how long is the string obj+proxy
@@ -114,7 +114,8 @@ void create_temp_1DArray(int m, int n, char arr[][n]) //turn char 2d int 1d char
 
     void All_String_Hash() // vector of hashes and find MAX hash
     {
-        for (int i=0; i < one.num_proxy ; i++)
+	int i;
+        for (i=0; i < one.num_proxy ; i++)
         {
             create_temp_1DArray(i, one.num_bit_conc, one.String_to_hash);
             

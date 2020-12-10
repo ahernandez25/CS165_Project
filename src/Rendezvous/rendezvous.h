@@ -4,7 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
-#include "murmur3.h"
+#include "../murmur/murmur3.h"
 
 void add_obj(char obj_name[]); //set object to concatenate
 void concatenate(char prox_name[]); // concatenate S
@@ -13,7 +13,7 @@ void All_Proxy_Concatenated(int size, int len_proxy, char prox_names[][len_proxy
 uint32_t Hash(char concatenate_O_P[]); // hash strings using mrmurhash
 void All_String_Hash(); // vector of hashes and find MAX hash
 char * return_prox(int i); //return proxy max as *char
-char* Rendezvous(char obj_name[],int len_proxy, char prox_names[][len_proxy]) // combine and return proxy 
+char* Rendezvous(char obj_name[],int len_proxy, char prox_names[][len_proxy]); // combine and return proxy 
 
 #endif
 

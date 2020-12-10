@@ -13,6 +13,7 @@
 #else
 #define FORCE_INLINE inline
 #endif
+
 using namespace std;
 
 //-----------------------------------------------------------------------------
@@ -496,7 +497,7 @@ class Bloom_filters
       fill_Bloom();
     }
     
-    bool query (string obj_name) // check if hash is in bloom
+    bool query (string obj_name) // check if hash is in bloom 1=true 0 =false
     {
     hold_hash = hash_k (obj_name);
       transform_hash ();

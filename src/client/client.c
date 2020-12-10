@@ -32,6 +32,8 @@
 #include <unistd.h>
 
 #include "../murmur/murmur3.c"
+#include "../Rendezvous/rendezvous.c"
+
 static void usage()
 {
 	extern char * __progname;
@@ -39,7 +41,7 @@ static void usage()
 	exit(1);
 }
 
-const char* proxyNames[6] = {"p1", "p2", "p3", "p4", "p5", "p6"};
+char PROXY_NAMES[][6] = {{"proxy1"}, {"proxy2"}, {"proxy3"},{"proxy4"}, {"proxy5"}, {"proxy6"}};
 const int PROXY_PORTS[6] = {9991,9992,9993,9994,9995,9996};
 
 int main(int argc, char *argv[])
@@ -55,7 +57,7 @@ int main(int argc, char *argv[])
 
 	char filename[80];
 	/* gets filename from arguments passed in */
-	strlcpy(filename, argv[2], sizeof(filename));
+	strlcpy(filename, argv[1], sizeof(filename));
 
 
 	/**************************************
@@ -63,22 +65,24 @@ int main(int argc, char *argv[])
 	 * 
 	 * for now uses port 9991, PROXY_PORTS[0]
 	 **************************************/
+	char *proxyPort = Rendezvous(filename,6, PROXY_NAMES);
+
 
 
 	if (argc != 2)
 		usage();
 
-        p = strtoul(PROXY_PORTS[0], &ep, 10);
-        if (*argv[1] == '\0' || *ep != '\0') {
+        p = strtoul(proxyPort, &ep, 10);
+        if (proxyPort == '\0' || *ep != '\0') {
 		/* parameter wasn't a number, or was empty */
-		fprintf(stderr, "%s - not a number\n", PROXY_PORTS[0]);
+		fprintf(stderr, "%s - not a number\n", proxyPort);
 		usage();
 	}
         if ((errno == ERANGE && p == ULONG_MAX) || (p > USHRT_MAX)) {
 		/* It's a number, but it either can't fit in an unsigned
 		 * long, or is too big for an unsigned short
 		 */
-		fprintf(stderr, "%s - value out of range\n", PROXY_PORTS[0]);
+		fprintf(stderr, "%s - value out of range\n", proxyPort);
 		usage();
 	}
 	/* now safe to do this */
@@ -107,9 +111,7 @@ int main(int argc, char *argv[])
 		err(1, "connect failed");
 
 
-	
-
-	//printf("\n filename to send: %s\n", filename);	
+		
 	ssize_t written, w;
 
 

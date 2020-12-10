@@ -39,6 +39,9 @@ static void usage()
 	exit(1);
 }
 
+const char* proxyNames[6] = {"p1", "p2", "p3", "p4", "p5", "p6"};
+const int PROXY_PORTS[6] = {9991,9992,9993,9994,9995,9996};
+
 int main(int argc, char *argv[])
 {
 	struct sockaddr_in server_sa;
@@ -49,20 +52,33 @@ int main(int argc, char *argv[])
 	u_long p;
 	int sd;
 
-	if (argc != 3)
+
+	char filename[80];
+	/* gets filename from arguments passed in */
+	strlcpy(filename, argv[2], sizeof(filename));
+
+
+	/**************************************
+	 * use rendevous hashing to find correct proxy ---
+	 * 
+	 * for now uses port 9991, PROXY_PORTS[0]
+	 **************************************/
+
+
+	if (argc != 2)
 		usage();
 
-        p = strtoul(argv[1], &ep, 10);
+        p = strtoul(PROXY_PORTS[0], &ep, 10);
         if (*argv[1] == '\0' || *ep != '\0') {
 		/* parameter wasn't a number, or was empty */
-		fprintf(stderr, "%s - not a number\n", argv[1]);
+		fprintf(stderr, "%s - not a number\n", PROXY_PORTS[0]);
 		usage();
 	}
         if ((errno == ERANGE && p == ULONG_MAX) || (p > USHRT_MAX)) {
 		/* It's a number, but it either can't fit in an unsigned
 		 * long, or is too big for an unsigned short
 		 */
-		fprintf(stderr, "%s - value out of range\n", argv[1]);
+		fprintf(stderr, "%s - value out of range\n", PROXY_PORTS[0]);
 		usage();
 	}
 	/* now safe to do this */
@@ -90,55 +106,16 @@ int main(int argc, char *argv[])
 	    == -1)
 		err(1, "connect failed");
 
-	char filename[80];
-	strlcpy(filename, argv[2], sizeof(filename));
-	//printf("Enter file name : ");
-	//fgets(filename, sizeof(filename), stdin);
+
+	
 
 	//printf("\n filename to send: %s\n", filename);	
 	ssize_t written, w;
 
-	/* HANGS WHEN USING LOOP
- 	* -----------------------
- 	
-  	w = 0;
 
-        written = 0;
-         while (written < strlen(filename)) {
-        	
-		w = write(sd, filename + written, strlen(filename) - written);
-                if (w == -1) {
-                	if (errno != EINTR)
-                        	err(1, "write failed");
-                }
-                else
-                	written += w;
-        }*/
 	w = write(sd, filename, sizeof(filename));
 	printf("\n\n file name sent to proxy: %s", filename);
 
-
-
-
-	//r = -1;
-	//rc = 0;
-	//maxread = sizeof(buffer) - 1; /* leave room for a 0 byte */
-
-/*	SERVER ENDS CONNECTION BEFORE ABLE TO READ WHEN USING LOOP
- * 	printf("\n about to read\n");
-	while ((r != 0) && rc < maxread) {
-		r = read(sd, buffer + rc, maxread - rc);
-		if (r == -1) {
-			if (errno != EINTR)
-				err(1, "read failed");
-		} else
-			rc += r;
-	} */
-	/*
-	 * we must make absolutely sure buffer has a terminating 0 byte
-	 * if we are to use it as a C string
-	 */
-	//buffer[80] = '\0';
 	r = read(sd, buffer, sizeof(buffer));
 	printf("\n\nServer sent:  %s\n",buffer);
 	printf("\nclose client\n");

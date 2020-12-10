@@ -189,12 +189,14 @@ int main(int argc,  char *argv[])
         		printf("client  sent:  %s",inputFile);
 
 			
+			/**************************************************
+			 * use bloom filter function to see if blacklisted
+			 **************************************************/
 			
 			
-			//printf("\n\nRead from file: \n");
 	
 			/*************************************
- 			 * reads files from cache
+ 			 * if not blacklisted, checks local cache
  			 *************************************/		
 			FILE *filePointer;
 			char readCacheFiles[60];
@@ -218,53 +220,62 @@ int main(int argc,  char *argv[])
 				printf("read from file, file now closed");
 			}/* end read from file */
 
+
+			/**********************************************
+			 * if in cache, sends file directly to client
+			 **********************************************/
 			if(inCache){
-				//send file from cache to client
-			} else {
-				//get file from server
-			}
+				/*send file from cache to client*/
+			} 
 
-
-
-			memset(&server, 0, sizeof(server));
-			server.sin_family = AF_INET;
-			server.sin_port = htons(portServer);
-			server.sin_addr.s_addr = inet_addr("127.0.0.2");
-			if(server.sin_addr.s_addr == INADDR_NONE) {
-				fprintf(stderr, "Invalid IP address \n");
-				usage();
-			}
-
-			/* ok now get a socket. we don't care where... */
-			if ((sdServer=socket(AF_INET,SOCK_STREAM,0)) == -1)
-				err(1, "socket failed");
-
-			/* connect the socket to the server described in "server_sa" */
-			if (connect(sdServer, (struct sockaddr *)&server, sizeof(server)) == -1)
-				err(1, "connect failed");
-
-
-			ssize_t written, w;
-			w = 0;
-			written = 0;
-			while (written < strlen(buffer)) {
-				w = write(sdServer, buffer + written,
-				    strlen(buffer) - written);
-				if (w == -1) {
-					if (errno != EINTR)
-						err(1, "write failed");
+			/**********************************************
+			 * if not in cache, asks server for file 
+			 **********************************************/
+			else {
+				
+				memset(&server, 0, sizeof(server));
+				server.sin_family = AF_INET;
+				server.sin_port = htons(portServer);
+				server.sin_addr.s_addr = inet_addr("127.0.0.2");
+				if(server.sin_addr.s_addr == INADDR_NONE) {
+					fprintf(stderr, "Invalid IP address \n");
+					usage();
 				}
-				else
-					written += w;
+
+				/* ok now get a socket. we don't care where... */
+				if ((sdServer=socket(AF_INET,SOCK_STREAM,0)) == -1)
+					err(1, "socket failed");
+
+				/* connect the socket to the server described in "server_sa" */
+				if (connect(sdServer, (struct sockaddr *)&server, sizeof(server)) == -1)
+					err(1, "connect failed");
+
+
+				ssize_t written, w;
+				w = 0;
+				written = 0;
+				while (written < strlen(inputFile)) {
+					w = write(sdServer, inputFile + written,
+						strlen(inputFile) - written);
+					if (w == -1) {
+						if (errno != EINTR)
+							err(1, "write failed");
+					}
+					else
+						written += w;
+				}
+				printf("\nwrote to server\n");
+				
+				char serverMsg[1024];
+
+				w = read(sdServer, serverMsg, sizeof(serverMsg));
+				printf("\n\nrecieved from server: [ %s ]\n", serverMsg);
+				w = write(clientsd, serverMsg, sizeof(serverMsg));
+				printf("\nwrote to client\n");
+		
+				close(sdServer);
 			}
-			printf("\nwrote to server\n");
 			
-			w = read(sdServer, buffer, sizeof(buffer));
-			printf("\n\nrecieved from server: [ %s ]\n", buffer);
-			w = write(clientsd, buffer, sizeof(buffer));
-			printf("\nwrote to client\n");
-	
-			close(sdServer);
 			close(clientsd);
 			exit(0);
 		}

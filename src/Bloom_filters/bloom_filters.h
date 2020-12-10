@@ -10,11 +10,11 @@
 #include "murmur3.h"
 
 void set_num_hashf (int k1);	//will set num hash functions
-int Hash(char obj_name[20], uint32_t seed); // hash strings using mrmurhash
-void hash_k (char obj_name[20]);	// creates k num of has functions
+int Hash(char obj_name[60], uint32_t seed); // hash strings using mrmurhash
+void hash_k (char obj_name[60]);	// creates k num of has functions
 void fill_Bloom(); //fill in bloom array
-void insert (char obj_name[20]); //insert hash to bloom
-int query (char obj_name[20]); // check if hash is in bloom 1=true 0 =false
+void insert (char obj_name[60]); //insert hash to bloom
+int query (char obj_name[60]); // check if hash is in bloom 1=true 0 =false
 
 // to use 
 /*

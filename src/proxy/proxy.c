@@ -37,6 +37,15 @@
 #include <string.h>
 #include <unistd.h>
 
+
+
+char * blacklisted[10] = {"file10", "file20", "file30", "file40", "file50",
+			  "file60", "file70", "file80", "file90", "file100"};
+
+void initializeBlacklisted(){
+		
+}
+
 static void usage()
 {
 	extern char * __progname;
@@ -50,10 +59,11 @@ static void kidhandler(int signum) {
 }
 
 
+
 int main(int argc,  char *argv[])
 {
 	struct sockaddr_in sockname, client, server;
-	char buffer[80], *ep, *ep2;
+	char inputFile[80], *ep, *ep2;
 	struct sigaction sa;
 	int sd, sdServer;
 	socklen_t clientlen, serverLen;
@@ -165,18 +175,56 @@ int main(int argc,  char *argv[])
 
 			r = -1;
         		rc = 0;
-        		maxread = sizeof(buffer) - 1; /* leave room for a 0 byte */
+        		maxread = sizeof(inputFile) - 1; /* leave room for a 0 byte */
         		while ((r != 0) && rc < maxread) {
-                		r = read(clientsd, buffer + rc, maxread - rc);
+                		r = read(clientsd, inputFile + rc, maxread - rc);
                 		if (r == -1) {
                         		if (errno != EINTR)
                                 		err(1, "read failed");
                 		} else
                         		rc += r;
         		}
-			buffer[rc] = '\0';
+			inputFile[rc] = '\0';
 
-        		printf("client  sent:  %s",buffer);
+        		printf("client  sent:  %s",inputFile);
+
+			
+			
+			
+			//printf("\n\nRead from file: \n");
+	
+			/*************************************
+ 			 * reads files from cache
+ 			 *************************************/		
+			FILE *filePointer;
+			char readCacheFiles[60];
+			bool inCache = false;
+
+			filePointer = fopen("../../src/proxy/cache.txt", "r");
+
+			if( filePointer == NULL){
+				perror(filePointer);
+			} else{
+				while(fscanf(filePointer,"%s",readCacheFiles) == 1){
+					if(inputFile == readCacheFiles){
+						inCache = true;
+					}
+				}
+
+				/*while( fgets( dataToRead, 60, filePointer ) != NULL){
+					printf( "%s", dataToRead);
+				}*/ 
+				fclose(filePointer);
+				printf("read from file, file now closed");
+			}/* end read from file */
+
+			if(inCache){
+				//send file from cache to client
+			} else {
+				//get file from server
+			}
+
+
 
 			memset(&server, 0, sizeof(server));
 			server.sin_family = AF_INET;

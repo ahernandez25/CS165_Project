@@ -54,6 +54,10 @@ static void kidhandler(int signum) {
 
 int main(int argc,  char *argv[])
 {
+
+
+
+
 	struct sockaddr_in sockname, client;
 	char buffer[80], *ep;
 	struct sigaction sa;

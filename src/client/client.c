@@ -32,7 +32,6 @@
 #include <unistd.h>
 
 #include "../murmur/murmur3.c"
-
 static void usage()
 {
 	extern char * __progname;
@@ -96,7 +95,7 @@ int main(int argc, char *argv[])
 	//printf("Enter file name : ");
 	//fgets(filename, sizeof(filename), stdin);
 
-	printf("\n filename to send: %s\n", filename);	
+	//printf("\n filename to send: %s\n", filename);	
 	ssize_t written, w;
 
 	/* HANGS WHEN USING LOOP
@@ -116,25 +115,11 @@ int main(int argc, char *argv[])
                 	written += w;
         }*/
 	w = write(sd, filename, sizeof(filename));
-	printf("\n\n file name sent to server: %s", filename);
+	printf("\n\n file name sent to proxy: %s", filename);
 
 
 
 
-	/* READS MESSAGE FROM BUFFER
- 	 * --------------------------------------------------------
-	 * finally, we are connected. find out what magnificent wisdom
-	 * our server is going to send to us - since we really don't know
-	 * how much data the server could send to us, we have decided
-	 * we'll stop reading when either our buffer is full, or when
-	 * we get an end of file condition from the read when we read
-	 * 0 bytes - which means that we pretty much assume the server
-	 * is going to send us an entire message, then close the connection
-	 * to us, so that we see an end-of-file condition on the read.
-	 *
-	 * we also make sure we handle EINTR in case we got interrupted
-	 * by a signal.
-	 */
 	//r = -1;
 	//rc = 0;
 	//maxread = sizeof(buffer) - 1; /* leave room for a 0 byte */

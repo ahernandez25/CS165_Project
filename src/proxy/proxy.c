@@ -281,12 +281,20 @@ int main(int argc,  char *argv[])
 					printf("\nwrote to client\n");
 		
 					close(sdServer);
-				}
-			}
+				}//checks if in cahe
+			} else {
+				char msg[22];
+				strlcpy(msg, "File is Blacklisted!\n", sizeof(msg)); 
+				ssize_t w;
+
+				w = write(clientsd, msg, sizeof(msg));
+                                printf("\nwrote to client\n");
+
+			}//end check if blacklisted
 				
 				close(clientsd);
 				exit(0);
-		}
+		}//end fork
 			close(clientsd);
-	}
+	}//end for
 }

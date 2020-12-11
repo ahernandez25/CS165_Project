@@ -15,11 +15,11 @@ bf_struct one = { 60, 0, 0, {0}, {0}, {0} };
 // functions
 void set_num_hashf (int k1)	//will set num hash functions
 {
-    printf("This is set %i \n", k1);
+   // printf("This is set %i \n", k1);
     one.m = 60;
     one.k = k1;
     one.seed = 12;
-    printf("This is set k %i \n", one.k);
+    //printf("This is set k %i \n", one.k);
     //0-100 fill with 0
     int i;
     for(i=0;i<60;i++ )

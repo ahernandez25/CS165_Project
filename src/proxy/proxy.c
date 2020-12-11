@@ -85,6 +85,9 @@ int main(int argc,  char *argv[])
 	pid_t pid;
 	u_long p, p2;
 
+	char* cachedFiles[100];
+	int index;
+	index = 0;
 	/* initializes bloom filter with blacklisted objects */
 	initializeBlacklisted();
 	
@@ -219,25 +222,38 @@ int main(int argc,  char *argv[])
  			 	* if not blacklisted, checks local cache
  			 	*************************************/		
 				FILE *filePointer;
-				char readCacheFiles[60];
+				char  readCacheFiles[10];
 				int inCache = 0;
 				char *fileCache;
 				fileCache = getCache(argv[1]);
-
+				int j;
+				/*for(j = 0; j < index; j++){
+					
+					printf("\n\ncached- %s\n\n",cachedFiles[j]);
+					if(cachedFiles[j] == inputFile){
+						inCache = 1;
+					}
+				}*/
+				
 				filePointer = fopen("../../src/files/cache.txt", "r");
 				
 				if( filePointer == NULL){
 					perror(filePointer);
 				} else{
-					while(fscanf(filePointer,"%s",readCacheFiles) == 1){
-						if(inputFile == readCacheFiles){
+					printf("\n\ninput file[%s]\n\n",inputFile);
+					//while(fgets(readCacheFiles, sizeof(readCacheFiles),filePointer)){
+					while(fscanf(filePointer,"%[^\n]",readCacheFiles) != EOF){
+						printf("\n\nfile read: [%s]", readCacheFiles);
+						if(strcmp(inputFile,readCacheFiles) == 0){
 							inCache = 1;
+							printf("\n\nfound in cache\n\n");
 						}
+						fgetc(filePointer);
 					}
 
 				fclose(filePointer);
 				//printf("read from file, file now closed");
-				}/* end read from file */
+				//}/* end read from file */
 
 
 				/**********************************************
@@ -306,24 +322,27 @@ int main(int argc,  char *argv[])
 					char serverMsg[1024];
 
 					w = read(sdServer, serverMsg, sizeof(serverMsg));
-					printf("\n\nrecieved from server: [ %s ]\n", serverMsg);
+					//printf("\n\nrecieved from server: [ %s ]\n", serverMsg);
 					w = write(clientsd, serverMsg, sizeof(serverMsg));
-					printf("\nwrote to client\n");
+					//printf("\nwrote to client\n");
 		
-
 					filePointer = fopen("../../src/files/cache.txt", "a");
 
-                                	if( filePointer == NULL){
-                                        	perror(filePointer);
-                                	} else{
-                                        	fprintf(filePointer,"%s\n",inputFile);
-
-                                		fclose(filePointer);
+					if( filePointer == NULL){
+							perror(filePointer);
+					} else{
+							fprintf(filePointer,"%s\n",inputFile);
+						printf("\n\nwrote to file: [%s]\n\n",inputFile);
+						fclose(filePointer);
 					}
+
+					/*cachedFiles[index] = inputFile;
+					printf("\n\nadded to cached files [%s]\n\n",cachedFiles[index]);
+					index++;*/
 
 					close(sdServer);
 				}//checks if in cache
-				
+			}	
 			} else {
 				char msg[22];
 				strlcpy(msg, "File is Blacklisted!\n", sizeof(msg)); 

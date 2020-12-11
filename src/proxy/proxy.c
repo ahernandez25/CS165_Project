@@ -64,6 +64,15 @@ static void kidhandler(int signum) {
 }
 
 
+char* getCache(char* port){
+	char start[80];
+	//printf("\n\n*%s*\n\n",port);
+
+	strlcpy(start,"../../src/files/",sizeof(start));
+	strcat(start,port);
+	strcat(start,"/");
+	return start;
+}
 
 int main(int argc,  char *argv[])
 {
@@ -78,8 +87,8 @@ int main(int argc,  char *argv[])
 
 	/* initializes bloom filter with blacklisted objects */
 	initializeBlacklisted();
-
-
+	
+	char* filePath = getCache(argv[1]);
 	/*
  	 * first, figure out what port we will listen on - it should
  	 * be our first parameter.	 	 */
@@ -101,7 +110,8 @@ int main(int argc,  char *argv[])
 	}
 	/* now safe to do this */
 	port = p;
-
+	char portNum[7];
+	strlcpy(portNum, argv[1], sizeof(portNum));
 
 	/*
  	 * makes sure port entered for server is valid               */
@@ -211,9 +221,11 @@ int main(int argc,  char *argv[])
 				FILE *filePointer;
 				char readCacheFiles[60];
 				int inCache = 0;
+				char *fileCache;
+				fileCache = getCache(argv[1]);
 
-				filePointer = fopen("../../src/proxy/cache.txt", "r");
-
+				filePointer = fopen("../../src/files/cache.txt", "r");
+				
 				if( filePointer == NULL){
 					perror(filePointer);
 				} else{
@@ -224,7 +236,7 @@ int main(int argc,  char *argv[])
 					}
 
 				fclose(filePointer);
-				printf("read from file, file now closed");
+				//printf("read from file, file now closed");
 				}/* end read from file */
 
 
@@ -233,12 +245,30 @@ int main(int argc,  char *argv[])
 			 	**********************************************/
 				if(inCache == 1){
 					/*send file from cache to client*/
-				} 
+				
+				/*	strcat("../../src/files/",inputFile);
+					filePointer = fopen("../../src/files/cache.txt", "r");
+					if( filePointer == NULL){
+                                        	perror(filePointer);
+                                	} else{
+                                        	while(fscanf(filePointer,"%s",readCacheFiles) == 1){
+                                                	if(inputFile == readCacheFiles){
+                                                        	inCache = 1;
+                                                	}
+                                        	}
+					}*/
+
+					ssize_t j;
+					char proxyMsg[80];
+					strlcpy(proxyMsg,"Proxy Sent from local cache: ",sizeof(proxyMsg)); 
+					strcat(proxyMsg,inputFile);
+					j = write(clientsd, proxyMsg, sizeof(proxyMsg));
+
 
 				/**********************************************
 			 	* if not in cache, asks server for file 
 			 	**********************************************/
-				else {
+				}else {
 				
 					memset(&server, 0, sizeof(server));
 					server.sin_family = AF_INET;
@@ -271,7 +301,7 @@ int main(int argc,  char *argv[])
 						else
 							written += w;
 					}
-					printf("\nwrote to server\n");
+					//printf("\nwrote to server\n");
 				
 					char serverMsg[1024];
 
@@ -280,8 +310,20 @@ int main(int argc,  char *argv[])
 					w = write(clientsd, serverMsg, sizeof(serverMsg));
 					printf("\nwrote to client\n");
 		
+
+					filePointer = fopen("../../src/files/cache.txt", "a");
+
+                                	if( filePointer == NULL){
+                                        	perror(filePointer);
+                                	} else{
+                                        	fprintf(filePointer,"%s\n",inputFile);
+
+                                		fclose(filePointer);
+					}
+
 					close(sdServer);
-				}//checks if in cahe
+				}//checks if in cache
+				
 			} else {
 				char msg[22];
 				strlcpy(msg, "File is Blacklisted!\n", sizeof(msg)); 

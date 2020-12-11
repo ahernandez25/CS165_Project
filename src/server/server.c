@@ -159,31 +159,15 @@ int main(int argc,  char *argv[])
 		ssize_t r, rc;
 		size_t maxread;
 		
-		/* printf("\nabout to read from client\n");*/
-
-		//r = -1;
-        	//rc = 0;
-        	//maxread = sizeof(buffer) - 1; /* leave room for a 0 byte */
-        	/*while ((r != 0) && rc < maxread) {
-                	r = read(clientsd, buffer + rc, maxread - rc);
-                	if (r == -1) {
-                        	if (errno != EINTR)
-                                	err(1, "read failed");
-                	} else
-                        	rc += r;
-        	}*/
-        	/*
-  	 	* we must make absolutely sure buffer has a terminating 0 byte
-         	* if we are to use it as a C string
-         	*                        */
-        	//buffer[rc] = '\0';
 		r = read(clientsd, buffer, sizeof(buffer));
         	printf("client  sent:  %s",buffer);
 
 
-
-
 		ssize_t written, w;
+
+		char svrMsg[80];
+		strlcpy(svrMsg, "Server Sent: ", sizeof(svrMsg));
+		strcat(svrMsg,buffer);
 		/*
 		 * write the message to the client, being sure to
 		 * handle a short write, or being interrupted by
@@ -191,9 +175,9 @@ int main(int argc,  char *argv[])
 		 */
 		w = 0;
 		written = 0;
-		while (written < strlen(buffer)) {
-			w = write(clientsd, buffer + written,
-			strlen(buffer) - written);
+		while (written < strlen(svrMsg)) {
+			w = write(clientsd, svrMsg + written,
+			strlen(svrMsg) - written);
 			if (w == -1) {
 				if (errno != EINTR)
 					err(1, "write failed");
